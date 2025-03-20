@@ -1,3 +1,4 @@
+#![feature(generic_const_exprs)]
 mod mat;
 mod traits;
 use mat::Mat;

@@ -102,6 +102,17 @@ impl<const R: usize, const C: usize> Mat<R, C> {
         Mat { contents: [arr] }
     }
 
+    // wohoo const generics!!!
+    pub fn values(&self) -> [f32; Self::ELEMENT_COUNT] {
+        let mut output = [0.0; Self::ELEMENT_COUNT];
+        self.contents.iter().enumerate().for_each(|(r, row)| {
+            row.iter()
+                .enumerate()
+                .for_each(|(c, v)| output[r * 3 + c] = *v)
+        });
+        output
+    }
+
     #[inline(always)]
     pub fn col_mat<const L: usize>(arr: [f32; L]) -> Mat<L, 1> {
         let mut contents = [[0.0; 1]; L];
