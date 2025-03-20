@@ -105,11 +105,26 @@ impl<const R: usize, const C: usize> Mat<R, C> {
     // wohoo const generics!!!
     pub fn flatten(&self) -> [f32; Self::ELEMENT_COUNT] {
         let mut output = [0.0; Self::ELEMENT_COUNT];
-        self.contents.iter().enumerate().for_each(|(r, row)| {
-            row.iter()
-                .enumerate()
-                .for_each(|(c, v)| output[r * 3 + c] = *v)
-        });
+
+        // skip the bound checking, we KNOW the bounds
+        // yes the performance benefit is "negligible" but this something you can only do with
+        // const generics
+        unsafe {
+            let mut i = 0;
+            for row in self.contents {
+                // move C * sizeof<T> bytes forward
+                std::ptr::copy_nonoverlapping(row.as_ptr(), output.as_mut_ptr().add(i), C);
+                // now that we've copied C bytes, we move the pointer C bytes forward
+                i += C;
+            }
+        }
+
+        // safe way in-case paranoia
+        /* let mut i = 0;
+        for row in self.contents {
+            output[i..i + C].copy_from_slice(&row);
+            i += C;
+        } */
         output
     }
 
