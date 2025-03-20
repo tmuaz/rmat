@@ -9,10 +9,6 @@ fn main() {
     println!("{}", mat);
     let comp_mat = Mat::from_arrays([[-1.0, -1.0, -1.0], [-1.0, 1.0, -1.0], [-1.0, -1.0, 1.0]]);
     println!("{}", comp_mat);
-    println!("{}", &mat * &comp_mat);
 
-    let mat_fill = Mat::<10, 10>::fill(1000000000000000.0);
-    println!("{}", mat_fill);
-
-    println!("{}", mat.dot(&mat));
+    println!("{}", mat.normalized_dot(&comp_mat));
 }

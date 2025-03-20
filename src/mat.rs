@@ -126,6 +126,10 @@ impl<const R: usize, const C: usize> Mat<R, C> {
     pub fn normalized_sum(&self) -> f32 {
         self.sum() / Self::ELEMENT_COUNT as f32
     }
+
+    pub fn normalized_dot(&self, rhs: &Self) -> f32 {
+        self.dot(rhs) / Self::ELEMENT_COUNT as f32
+    }
 }
 
 impl<const R: usize, const C: usize> Dot<Mat<R, C>> for Mat<R, C> {
@@ -133,7 +137,7 @@ impl<const R: usize, const C: usize> Dot<Mat<R, C>> for Mat<R, C> {
         let mut output = 0.0;
         for (l, r) in self.contents.iter().zip(rhs.contents.iter()) {
             for (le, re) in l.iter().zip(r.iter()) {
-                output += le + re;
+                output += le * re;
             }
         }
         output
