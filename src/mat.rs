@@ -103,7 +103,7 @@ impl<const R: usize, const C: usize> Mat<R, C> {
     }
 
     // wohoo const generics!!!
-    pub fn values(&self) -> [f32; Self::ELEMENT_COUNT] {
+    pub fn flatten(&self) -> [f32; Self::ELEMENT_COUNT] {
         let mut output = [0.0; Self::ELEMENT_COUNT];
         self.contents.iter().enumerate().for_each(|(r, row)| {
             row.iter()
