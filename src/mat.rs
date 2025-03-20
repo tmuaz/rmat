@@ -1,3 +1,4 @@
+use super::traits::*;
 use std::{
     fmt::Display,
     ops::{Add, Index, IndexMut, Mul},
@@ -23,19 +24,59 @@ impl<const R: usize, const C: usize> IndexMut<usize> for Mat<R, C> {
     }
 }
 
+// TODO: probably optimize? but it's just a display function it shouldn't matter
+
 impl<const R: usize, const C: usize> Display for Mat<R, C> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for array in self.contents {
-            writeln!(f, "{:?}", array)?
+        const PADDING: usize = 8;
+        let mut array_iter = self.contents.iter();
+        let first_row = array_iter.next();
+        if let Some(row) = first_row {
+            writeln!(f, "{:-<26}", "")?;
+            write!(f, "│")?;
+            for v in row {
+                write!(f, "{:>width$}│", v, width = PADDING)?;
+            }
         }
+        for rows in array_iter {
+            writeln!(f)?;
+            write!(f, "│")?;
+            for v in rows {
+                write!(f, "{:>width$}│", v, width = PADDING)?;
+            }
+        }
+        writeln!(f)?;
+        write!(f, "└")?;
+        write!(f, "{:-}", "")?;
+
         Ok(())
     }
 }
 
 impl<const R: usize, const C: usize> Mat<R, C> {
+    pub const ELEMENT_COUNT: usize = R * C;
     pub const ZERO: Self = Self {
         contents: [[0.0; C]; R],
     };
+
+    pub const fn fill(val: f32) -> Self {
+        Self {
+            contents: [[val; C]; R],
+        }
+    }
+
+    /// Given a function that takes in a row and column and outputs an f32, generate a matrix
+    /// based on the generator
+    pub fn generate(generator: fn(usize, usize) -> f32) -> Self {
+        let mut mat = Self::ZERO;
+        // TODO: parallelize
+        mat.contents.iter_mut().enumerate().for_each(|(r, row)| {
+            row.iter_mut()
+                .enumerate()
+                .for_each(|(c, v)| *v = generator(r, c))
+        });
+        mat
+    }
 
     #[inline(always)]
     pub fn from_arrays(arrays: [[f32; C]; R]) -> Self {
@@ -74,6 +115,26 @@ impl<const R: usize, const C: usize> Mat<R, C> {
         let mut output = [0.0; C];
         for (i, row) in self.contents.iter().enumerate() {
             output[i] = row[c];
+        }
+        output
+    }
+
+    pub fn sum(&self) -> f32 {
+        self.contents.map(|arr| arr.iter().sum()).iter().sum()
+    }
+
+    pub fn normalized_sum(&self) -> f32 {
+        self.sum() / Self::ELEMENT_COUNT as f32
+    }
+}
+
+impl<const R: usize, const C: usize> Dot<Mat<R, C>> for Mat<R, C> {
+    fn dot(&self, rhs: &Self) -> f32 {
+        let mut output = 0.0;
+        for (l, r) in self.contents.iter().zip(rhs.contents.iter()) {
+            for (le, re) in l.iter().zip(r.iter()) {
+                output += le + re;
+            }
         }
         output
     }
