@@ -1,4 +1,4 @@
-use crate::prelude::traits::*;
+use crate::{prelude::traits::*, Vct};
 use std::{
     fmt::Display,
     ops::{Add, Index, IndexMut, Mul},
@@ -65,11 +65,12 @@ impl<const R: usize, const C: usize> Mat<R, C> {
         }
     }
 
-    /// Given a function that takes in a row and column and outputs an f32, generate a matrix
-    /// based on the generator
-    pub fn generate(generator: fn(usize, usize) -> f32) -> Self {
+    pub fn generate<F>(generator: F) -> Self
+    where
+        F: Fn(usize, usize) -> f32,
+    {
         let mut mat = Self::ZERO;
-        // TODO: parallelize
+        // TODO: parallelize and somehow do it with uninitialized memory
         mat.contents.iter_mut().enumerate().for_each(|(r, row)| {
             row.iter_mut()
                 .enumerate()
@@ -200,5 +201,25 @@ impl<const R: usize, const C: usize, const K: usize> Mul<&Mat<C, K>> for &Mat<R,
             }
         }
         output
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<&Vct<C>> for &Mat<R, C> {
+    type Output = Vct<R>;
+    fn mul(self, rhs: &Vct<C>) -> Self::Output {
+        let mut output = Self::Output::ZERO;
+        for (i, row) in self.contents.iter().enumerate() {
+            output[i] = Vct::from_array_ref(row).dot(rhs);
+        }
+        output
+    }
+}
+impl<const L: usize> Mul<Vct<L>> for &Mat<L, L> {
+    type Output = Vct<L>;
+    fn mul(self, mut rhs: Vct<L>) -> Self::Output {
+        for (i, row) in self.contents.iter().enumerate() {
+            rhs[i] = Vct::from_array_ref(row).dot(&rhs);
+        }
+        rhs
     }
 }
