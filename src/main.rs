@@ -39,7 +39,7 @@ fn main() {
         // rotate the point
         vct = &rotate_mat * vct;
         // this is the point we want to draw a line until
-        let point = &(&vct * 200.0) + &center;
+        let point = &vct + &center;
         canvas.set_draw_color(Color::WHITE);
         canvas.draw_line(&center, &point).unwrap();
         canvas.present();
