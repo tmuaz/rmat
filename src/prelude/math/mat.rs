@@ -1,4 +1,4 @@
-use super::traits::*;
+use crate::prelude::traits::*;
 use std::{
     fmt::Display,
     ops::{Add, Index, IndexMut, Mul},
@@ -6,11 +6,11 @@ use std::{
 
 #[derive(Debug, Clone)]
 pub struct Mat<const R: usize, const C: usize> {
-    contents: [[f32; C]; R],
+    pub contents: [[f32; C]; R],
 }
 
-// so how you *actually* index this is by doing mat[r][c] which is a pretty cool quirk
 // What you are actually indexing is the row
+// so how you *actually* index this is by doing mat[r][c] which is a pretty cool quirk
 impl<const R: usize, const C: usize> Index<usize> for Mat<R, C> {
     type Output = [f32; C];
     fn index(&self, r: usize) -> &Self::Output {
@@ -102,8 +102,9 @@ impl<const R: usize, const C: usize> Mat<R, C> {
         Mat { contents: [arr] }
     }
 
-    // wohoo const generics!!!
+    /* // wohoo const generics!!!
     pub fn flatten(&self) -> [f32; Self::ELEMENT_COUNT] {
+        // TODO: get this uninitialized
         let mut output = [0.0; Self::ELEMENT_COUNT];
 
         // skip the bound checking, we KNOW the bounds
@@ -126,7 +127,7 @@ impl<const R: usize, const C: usize> Mat<R, C> {
             i += C;
         } */
         output
-    }
+    } */
 
     #[inline(always)]
     pub fn col_mat<const L: usize>(arr: [f32; L]) -> Mat<L, 1> {
@@ -200,8 +201,4 @@ impl<const R: usize, const C: usize, const K: usize> Mul<&Mat<C, K>> for &Mat<R,
         }
         output
     }
-}
-
-fn dot<const L: usize>(arr1: &[f32; L], arr2: &[f32; L]) -> f32 {
-    arr1.iter().zip(arr2.iter()).map(|(n1, n2)| n1 * n2).sum()
 }
