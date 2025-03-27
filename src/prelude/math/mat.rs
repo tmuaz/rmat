@@ -1,4 +1,4 @@
-use crate::{prelude::traits::*, Vct};
+use crate::{prelude::traits::*, rendering::Poly, Vct};
 use std::{
     fmt::Display,
     ops::{Add, Index, IndexMut, Mul},
@@ -84,6 +84,10 @@ impl<const R: usize, const C: usize> Mat<R, C> {
         Self { contents: arrays }
     }
 
+    pub fn inverse(&self) -> Self {
+        todo!();
+    }
+
     pub fn transpose(&self) -> Mat<C, R> {
         // initialize new matrix
         let mut new: Mat<C, R> = Mat::ZERO;
@@ -160,6 +164,20 @@ impl<const R: usize, const C: usize> Mat<R, C> {
     }
 }
 
+impl<const L: usize> Mat<L, L> {
+    pub const fn identity() -> Self {
+        let mut contents = [[0.0; L]; L];
+
+        let mut i = 0;
+        while i < L {
+            contents[i][i] = 1.0;
+            i += 1;
+        }
+
+        Self { contents }
+    }
+}
+
 impl<const R: usize, const C: usize> Dot<Mat<R, C>> for Mat<R, C> {
     fn dot(&self, rhs: &Self) -> f32 {
         let mut output = 0.0;
@@ -214,6 +232,31 @@ impl<const R: usize, const C: usize> Mul<&Vct<C>> for &Mat<R, C> {
         output
     }
 }
+
+impl<const R: usize> Mul<&mut Vct<R>> for &Mat<R, R> {
+    type Output = ();
+    fn mul(self, rhs: &mut Vct<R>) -> Self::Output {
+        for (i, row) in self.contents.iter().enumerate() {
+            rhs[i] = Vct::from_array_ref(row).dot(rhs);
+        }
+    }
+}
+
+impl<const R: usize, const S: usize> Mul<&mut [Vct<R>; S]> for &Mat<R, R> {
+    type Output = ();
+    fn mul(self, rhs: &mut [Vct<R>; S]) -> Self::Output {
+        for vct in rhs.iter_mut() {
+            self * vct;
+        }
+    }
+}
+impl Mul<&mut Poly> for &Mat<4, 4> {
+    type Output = ();
+    fn mul(self, rhs: &mut Poly) -> Self::Output {
+        self * &mut rhs.vertices;
+    }
+}
+
 impl<const L: usize> Mul<Vct<L>> for &Mat<L, L> {
     type Output = Vct<L>;
     fn mul(self, mut rhs: Vct<L>) -> Self::Output {
