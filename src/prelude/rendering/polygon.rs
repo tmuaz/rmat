@@ -21,8 +21,9 @@ impl Poly {
     ) -> Result<(), String> {
         let mut transformed = self.clone();
         transform_matrix * &mut transformed.vertices;
-        /* println!("{}", transform_matrix);
-        dbg!(&transformed); */
+        // since the transformed matrix is meant to be homogenous we are going to divide everything
+        // by w in order to get itself back
+        transformed.vertices.iter_mut().for_each(Vert::homogenize);
         for i in 0..2 {
             let j = i + 1;
             canvas.draw_line(&transformed.vertices[i], &transformed.vertices[j])?;

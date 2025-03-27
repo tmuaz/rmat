@@ -15,6 +15,7 @@ pub struct Vct<const L: usize> {
 
 impl<const L: usize> Vct<L> {
     pub const ZERO: Self = Self { contents: [0.0; L] };
+    const LAST_INDEX: usize = L - 1;
 
     pub fn generate<F>(generator: F) -> Self
     where
@@ -36,6 +37,15 @@ impl<const L: usize> Vct<L> {
         // this should allow for a perfect cast and also should behave well with the borrow checker
         // The structure of [f32;L] and Vct<L> is the exact same so this is possible
         unsafe { &*((array as *const [f32; L]) as *const Self) }
+    }
+
+    pub fn homogenize(&mut self) {
+        let w = self[Self::LAST_INDEX];
+        // Should probably panic if w is 0
+        self[Self::LAST_INDEX] = 1.0;
+        for i in 0..Self::LAST_INDEX {
+            self[i] /= w;
+        }
     }
 }
 

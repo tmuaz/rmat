@@ -34,6 +34,8 @@ impl Renderer {
         // we want to shift to the center
         transform_matrix[0][3] = center[0];
         transform_matrix[1][3] = center[1];
+        transform_matrix[3][2] = 1.0;
+        transform_matrix[3][3] = 0.0;
         transform_matrix
     }
 

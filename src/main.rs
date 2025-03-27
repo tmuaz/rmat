@@ -20,7 +20,7 @@ fn main() -> Result<(), String> {
         .build()
         .unwrap();
 
-    let rotate = rotation_mat(0.01);
+    let rotate = rotation_mat(0.01, 0.01, 0.01);
 
     let mut canvas = window.into_canvas().build().unwrap();
     canvas.set_draw_color(Color::BLACK);
@@ -30,9 +30,9 @@ fn main() -> Result<(), String> {
 
     const SCALE: f32 = 200.0;
     let mut poly: Poly = [
-        [0.0, SCALE, 0.0, 1.0],
-        [SCALE, 0.0, 0.0, 1.0],
-        [-SCALE, 0.0, 0.0, 1.0],
+        [0.0, SCALE, 1.0, 1.0],
+        [SCALE, 0.0, 1.0, 1.0],
+        [-SCALE, 0.0, 1.0, 1.0],
     ]
     .into();
     let mut renderer = Renderer::new(vec![poly], center);
@@ -59,11 +59,25 @@ fn main() -> Result<(), String> {
 
 #[rustfmt::skip]
 // https://en.wikipedia.org/wiki/Rotation_matrix
-fn rotation_mat(theta: f32) -> Mat<4, 4> {
-    Mat::from_arrays([
-        [f32::cos(theta), -f32::sin(theta), 0.0, 0.0],
-        [f32::sin(theta),  f32::cos(theta), 0.0, 0.0],
-        [                  0.0,                    0.0, 1.0, 0.0],
-        [                  0.0,                    0.0, 0.0, 1.0]
-    ])
+fn rotation_mat(yaw: f32, pitch: f32, roll:f32) -> Mat<4, 4> {
+    let roll_t:Mat<4,4,> = [
+        [f32::cos(roll), -f32::sin(roll), 0.0, 0.0],
+        [f32::sin(roll),  f32::cos(roll), 0.0, 0.0],
+        [                 0.0,                   0.0, 1.0, 0.0],
+        [                 0.0,                   0.0, 0.0, 1.0]
+    ].into();
+    let pitch_t: Mat<4,4,> = [
+        [ f32::cos(pitch), 0.0, f32::sin(pitch), 0.0],
+        [                   0.0, 1.0,                   0.0, 0.0],
+        [-f32::sin(pitch), 0.0, f32::cos(pitch), 0.0],
+        [                  0.0,  0.0,                   0.0, 1.0]
+    ].into();
+    let yaw_t :Mat<4,4>= [
+        [1.0,       0.0,        0.0, 0.0],
+        [0.0, yaw.cos(), -yaw.sin(), 0.0],
+        [0.0, yaw.sin(),  yaw.cos(), 0.0],
+        [0.0,       0.0,        0.0, 1.0]
+    ].into();
+
+        roll_t
 }

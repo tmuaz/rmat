@@ -221,6 +221,17 @@ impl<const R: usize, const C: usize, const K: usize> Mul<&Mat<C, K>> for &Mat<R,
         output
     }
 }
+impl<const R: usize> Mul<&Mat<R, R>> for Mat<R, R> {
+    type Output = Self;
+    fn mul(mut self, rhs: &Mat<R, R>) -> Self::Output {
+        for r in 0..R {
+            for c in 0..R {
+                self[r][c] *= rhs[r][c]
+            }
+        }
+        self
+    }
+}
 
 impl<const R: usize, const C: usize> Mul<&Vct<C>> for &Mat<R, C> {
     type Output = Vct<R>;
@@ -264,5 +275,11 @@ impl<const L: usize> Mul<Vct<L>> for &Mat<L, L> {
             rhs[i] = Vct::from_array_ref(row).dot(&rhs);
         }
         rhs
+    }
+}
+
+impl<const R: usize, const C: usize> Into<Mat<R, C>> for [[f32; C]; R] {
+    fn into(self) -> Mat<R, C> {
+        Mat::from_arrays(self)
     }
 }
